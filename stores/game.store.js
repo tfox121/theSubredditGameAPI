@@ -1,10 +1,19 @@
 const Game = require('../models/game.model');
 
+const fetch = require('node-fetch');
+
 class GameStore {
   // add new game to database
-  static async createGame() {
-    const newGame = new Game({});
+  static async createGame(requestBody) {
+    const { rounds, nsfw } = requestBody;
     console.log('New game created');
+
+    const subList = [];
+    for (let i = 0; i < 5; i++) {
+      subList.push(await this.generateSubreddit(nsfw));
+    }
+
+    const newGame = new Game({ rounds, subList, nsfw });
     return await newGame.save();
   }
 
@@ -34,6 +43,21 @@ class GameStore {
     return playerUnique;
   }
 
+  static async generateSubreddit(nsfw) {
+    const url = nsfw
+      ? 'https://www.reddit.com/r/randnsfw/about.json'
+      : 'https://www.reddit.com/r/random/about.json';
+    const subData = await fetch(url);
+    const subDataJson = await subData.json();
+    return subDataJson.data;
+  }
+
+  static async subRefresh(gameData) {
+    gameData.subList.shift();
+    gameData.subList.push(await this.generateSubreddit(gameData.nsfw));
+    gameData.save();
+  }
+
   // edit existing game according to id
   static async editGame(id, requestBody) {
     const gameData = await this.fetchGame(id);
@@ -55,17 +79,6 @@ class GameStore {
       };
       gameData.players = [newPlayer, ...(gameData.players && gameData.players)];
     }
-    if (requestBody.currentSub) {
-      console.log('EDIT:', requestBody.currentSub.display_name, id);
-      gameData.currentSub = requestBody.currentSub;
-      if (gameData.roundComplete) {
-        gameData.roundComplete = false;
-        gameData.round++;
-      }
-      gameData.players.forEach(player => {
-        player.currentGuess = '';
-      });
-    }
     if (requestBody.guess) {
       console.log('EDIT:', requestBody.player, requestBody.guess, id);
       gameData.players.forEach(player => {
@@ -76,10 +89,10 @@ class GameStore {
       const roundComplete = await this.checkRoundComplete(gameData);
       if (roundComplete) {
         gameData.roundComplete = true;
-        gameData.gameStarted = true;
-        const resultsObj = await this.addScores(gameData);
+        const resultsObj = await this.calcScores(gameData);
         gameData.players.forEach(player => {
           player.score += resultsObj[player.name];
+          player.lastResult = resultsObj[player.name].toString();
         });
       }
     }
@@ -90,10 +103,6 @@ class GameStore {
   static async checkRoundComplete(gameData) {
     if (!gameData.roundComplete) {
       console.log('Checking complete...');
-      if (gameData.players.length < 2) {
-        console.log('Not complete');
-        return;
-      }
       let roundComplete = true;
       gameData.players.forEach(player => {
         if (!player.currentGuess) {
@@ -104,8 +113,8 @@ class GameStore {
     }
   }
 
-  // calculate scores for game round and add to total
-  static async addScores(gameData) {
+  // calculate scores for game round
+  static async calcScores(gameData) {
     console.log('Adding scores');
     if (!gameData.roundComplete) {
       return;
@@ -138,6 +147,43 @@ class GameStore {
         score[Object.keys(score)[0]] = resultsArr.length - index - 1;
       });
     return Object.assign({}, ...resultsArr);
+  }
+
+  static async newRound(id, currentPlayer) {
+    console.log('EDIT:', id);
+    const gameData = await this.fetchGame(id);
+    if (gameData.rounds === gameData.currentRound) {
+      return;
+    }
+
+    let readyForNextRound = true;
+
+    gameData.players.forEach(player => {
+      if (player.name === currentPlayer) {
+        player.readyForNext = true;
+      }
+      if (player.readyForNext === false) {
+        readyForNextRound = false;
+        console.log('Waiting on players...');
+      }
+    });
+    if (
+      readyForNextRound &&
+      (!gameData.gameStarted || gameData.roundComplete)
+    ) {
+      gameData.gameStarted = true;
+      console.log('Everyone Ready!');
+      gameData.currentSub = gameData.subList[0];
+      if (gameData.roundComplete) {
+        gameData.roundComplete = false;
+        gameData.currentRound++;
+      }
+      gameData.players.forEach(player => {
+        player.currentGuess = '';
+        player.readyForNext = false;
+      });
+    }
+    return await gameData.save();
   }
 
   // // find task by id and delete

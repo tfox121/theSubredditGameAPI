@@ -11,6 +11,9 @@ router.get('/', GameController.fetchGames);
 // fetch single game
 router.get('/:id', GameController.fetchGame);
 
+// start new round
+router.patch('/:id/new', GameController.newRound);
+
 // edit game
 router.patch('/:id', GameController.editGame);
 
