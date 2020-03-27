@@ -17,6 +17,10 @@ app.use(function(req, res, next) {
     'https://tfox121-thesubredditgame.glitch.me'
   );
 
+  if (process.env.NODE_ENV !== 'production') {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  }
+
   // Request methods you wish to allow
   res.setHeader(
     'Access-Control-Allow-Methods',
@@ -45,7 +49,7 @@ app.use('/games', gameRoute);
 // Setup a default catch-all route that sends back a welcome message in JSON format.
 app.get('*', (req, res) =>
   res.status(200).send({
-    message: 'Welcome to the beginning of nothingness.'
+    message: 'Welcome to the beginning of subreddit game API!'
   })
 );
 

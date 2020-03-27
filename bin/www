@@ -13,5 +13,5 @@ mongoose.connect(process.env.MONGO_URI, {
 const port = parseInt(process.env.PORT, 10) || 8000;
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}!`);
+  console.log(`Subreddit Game API listening on port ${port}!`);
 });
