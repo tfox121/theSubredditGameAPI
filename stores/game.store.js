@@ -43,10 +43,16 @@ class GameStore {
     return playerUnique;
   }
 
-  static async generateSubreddit(nsfw) {
-    const url = nsfw
-      ? 'https://www.reddit.com/r/randnsfw/about.json'
-      : 'https://www.reddit.com/r/random/about.json';
+  static async generateSubreddit(nsfwLevel) {
+    let url;
+    const randomNum = Math.random();
+    if (nsfwLevel === 0 || (nsfwLevel === 1 && randomNum <= 0.7)) {
+      console.log('SFW');
+      url = 'https://www.reddit.com/r/random/about.json';
+    } else {
+      console.log('NSFW');
+      url = 'https://www.reddit.com/r/randnsfw/about.json';
+    }
     const subData = await fetch(url);
     const subDataJson = await subData.json();
     return subDataJson.data;
