@@ -12,7 +12,10 @@ app.use(logger('dev'));
 
 app.use(function(req, res, next) {
   // Website you wish to allow to connect
-  res.setHeader('Access-Control-Allow-Origin', 'https://subreddit-game.com/');
+  res.setHeader(
+    'Access-Control-Allow-Origin',
+    'https://subreddit-game.herokuapp.com//'
+  );
 
   if (process.env.NODE_ENV !== 'production') {
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
