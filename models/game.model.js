@@ -13,15 +13,23 @@ const PlayerSchema = new mongoose.Schema({
   readyForNext: { type: Boolean, default: false }
 });
 
+const GuessSchema = new mongoose.Schema({
+  playerName: { type: String, required: true },
+  percentage: { type: Number, required: true },
+  subName: { type: String, required: true }
+});
+
 const GameSchema = new mongoose.Schema({
   _id: { type: String, default: shortid.generate },
   roundComplete: { type: Boolean, default: false },
+  gameComplete: { type: Boolean, default: false },
   currentSub: {},
   subList: [],
   currentRound: { type: Number, default: 1 },
   rounds: { type: Number, required: true },
   gameStarted: { type: Boolean, default: false },
-  nsfw: { type: Boolean, default: false },
+  nsfw: { type: Number, default: 0 },
+  closestGuess: GuessSchema,
   players: [PlayerSchema]
 });
 
