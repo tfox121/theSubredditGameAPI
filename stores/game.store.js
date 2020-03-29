@@ -92,7 +92,7 @@ class GameStore {
           player.currentGuess = requestBody.guess;
         }
       });
-      const roundComplete = await this.checkRoundComplete(gameData);
+      const roundComplete = await this.checkRoundOrGameComplete(gameData);
       if (roundComplete) {
         gameData.roundComplete = true;
         const resultsObj = await this.calcScores(gameData);
@@ -106,7 +106,7 @@ class GameStore {
   }
 
   // check game to see if every player has submitted a guess
-  static async checkRoundComplete(gameData) {
+  static async checkRoundOrGameComplete(gameData) {
     if (!gameData.roundComplete) {
       console.log('Checking complete...');
       let roundComplete = true;
@@ -115,6 +115,9 @@ class GameStore {
           roundComplete = false;
         }
       });
+      if (roundComplete && gameData.rounds <= gameData.currentRound) {
+        gameData.gameComplete = true;
+      }
       return roundComplete;
     }
   }
@@ -150,6 +153,17 @@ class GameStore {
         return 0;
       })
       .forEach((score, index) => {
+        const playerName = Object.keys(score)[0];
+        if (
+          !gameData.closestGuess ||
+          score[playerName] < gameData.closestGuess.percentage
+        ) {
+          gameData.closestGuess = {
+            playerName: playerName,
+            percentage: score[playerName],
+            subName: gameData.currentSub.display_name_prefixed
+          };
+        }
         score[Object.keys(score)[0]] = resultsArr.length - index - 1;
       });
     return Object.assign({}, ...resultsArr);
