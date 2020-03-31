@@ -29,6 +29,15 @@ class GameController {
     }
   }
 
+  static async generateSubreddit(req, res, next) {
+    try {
+      const sub = await GameStore.generateSingleSub(req.params.nsfw);
+      res.json(sub);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   static async editGame(req, res, next) {
     try {
       const game = await GameStore.editGame(req.params.id, req.body);
@@ -49,9 +58,20 @@ class GameController {
       next(err);
     }
   }
-  static async deleteGame(req, res, next) {
-    GameStore.deleteGame(req.body);
+
+  static async deleteAll(req, res, next) {
+    console.log('Deleting');
+    try {
+      const response = await GameStore.deleteAll(req.params.auth);
+      res.send(response);
+    } catch (err) {
+      next(err);
+    }
   }
+
+  // static async deleteGame(req, res, next) {
+  //   GameStore.deleteGame(req.body);
+  // }
 }
 
 module.exports = GameController;

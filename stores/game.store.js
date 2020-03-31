@@ -1,6 +1,7 @@
-const Game = require('../models/game.model');
-
 const fetch = require('node-fetch');
+const r = require('../snoowrap');
+
+const Game = require('../models/game.model');
 
 class GameStore {
   // add new game to database
@@ -44,17 +45,27 @@ class GameStore {
   }
 
   static async generateSubreddit(nsfwLevel) {
+    const nsfwInt = parseInt(nsfwLevel, 10);
     let url;
     const randomNum = Math.random();
-    if (nsfwLevel === 0 || (nsfwLevel === 1 && randomNum <= 0.7)) {
+
+    if (nsfwInt === 0 || (nsfwInt === 1 && randomNum <= 0.7)) {
       console.log('SFW');
       url = 'https://www.reddit.com/r/random/about.json';
     } else {
       console.log('NSFW');
       url = 'https://www.reddit.com/r/randnsfw/about.json';
     }
+
     const subData = await fetch(url);
     const subDataJson = await subData.json();
+
+    console.log(subDataJson.data.display_name);
+    const topPosts = await r
+      .getSubreddit(subDataJson.data.display_name)
+      .getTop({ time: 'all' });
+    subDataJson.data.topPost = JSON.parse(JSON.stringify(topPosts[0]));
+
     return subDataJson.data;
   }
 
@@ -62,6 +73,10 @@ class GameStore {
     gameData.subList.shift();
     gameData.subList.push(await this.generateSubreddit(gameData.nsfw));
     gameData.save();
+  }
+
+  static async generateSingleSub(nsfw) {
+    return await this.generateSubreddit(nsfw);
   }
 
   // edit existing game according to id
@@ -204,6 +219,16 @@ class GameStore {
       });
     }
     return await gameData.save();
+  }
+
+  // delete all games
+  static async deleteAll(auth) {
+    if (auth === process.env.DELETE_AUTH) {
+      const games = await this.fetchGames();
+      return await games.deleteMany();
+    } else {
+      throw 'Auth incorrect';
+    }
   }
 
   // // find task by id and delete
