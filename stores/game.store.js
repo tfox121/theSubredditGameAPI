@@ -3,7 +3,7 @@ const r = require('../snoowrap');
 
 const Game = require('../models/game.model');
 
-class GameStore {
+module.exports = class GameStore {
   // add new game to database
   static async createGame(requestBody) {
     const { rounds, nsfw } = requestBody;
@@ -245,6 +245,4 @@ class GameStore {
   //     });
   //   });
   // }
-}
-
-module.exports = GameStore;
+};

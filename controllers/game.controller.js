@@ -1,6 +1,6 @@
 const GameStore = require('../stores/game.store');
 
-class GameController {
+module.exports = class GameController {
   static async createGame(req, res, next) {
     try {
       console.log(req.body);
@@ -72,6 +72,4 @@ class GameController {
   // static async deleteGame(req, res, next) {
   //   GameStore.deleteGame(req.body);
   // }
-}
-
-module.exports = GameController;
+};

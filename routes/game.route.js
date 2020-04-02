@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const GameController = require('../controllers/game.controller');
+const MessageController = require('../controllers/message.controller');
 
 // create new game
 router.post('/', GameController.createGame);
@@ -19,6 +20,12 @@ router.patch('/:id/new', GameController.newRound);
 
 // edit game
 router.patch('/:id', GameController.editGame);
+
+// create new message
+router.post('/:id/message', MessageController.createMessage);
+
+// fetch all messages
+router.get('/:id/message', MessageController.fetchMessages);
 
 // delete all games
 router.delete('/delete/:auth', GameController.deleteAll);

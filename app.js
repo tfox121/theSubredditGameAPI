@@ -1,11 +1,8 @@
-const express = require('express');
+const app = require('express')();
 const logger = require('morgan');
 const bodyParser = require('body-parser');
 
 const gameRoute = require('./routes/game.route');
-
-// Set up the express app
-const app = express();
 
 // Log requests to the console.
 app.use(logger('dev'));
@@ -44,6 +41,7 @@ app.use(function(req, res, next) {
 // Parse incoming requests data (https://github.com/expressjs/body-parser)
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use('/games', gameRoute);
 app.use('/games', gameRoute);
 
 // Setup a default catch-all route that sends back a welcome message in JSON format.
