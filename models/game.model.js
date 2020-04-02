@@ -19,6 +19,12 @@ const GuessSchema = new mongoose.Schema({
   subName: { type: String, required: true }
 });
 
+const MessageSchema = new mongoose.Schema({
+  playerName: { type: String, required: true },
+  message: { type: String, required: true },
+  timeReceived: { type: Date, default: Date.now }
+});
+
 const GameSchema = new mongoose.Schema({
   _id: { type: String, default: shortid.generate },
   roundComplete: { type: Boolean, default: false },
@@ -30,7 +36,8 @@ const GameSchema = new mongoose.Schema({
   gameStarted: { type: Boolean, default: false },
   nsfw: { type: Number, default: 0 },
   closestGuess: GuessSchema,
-  players: [PlayerSchema]
+  players: [PlayerSchema],
+  messages: [MessageSchema]
 });
 
 const Game = mongoose.model('Game', GameSchema);

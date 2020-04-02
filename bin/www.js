@@ -1,0 +1,83 @@
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
+const app = require('../app');
+const mongoose = require('mongoose');
+const WebSocket = require('ws');
+
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+
+const port = parseInt(process.env.PORT, 10) || 8000;
+
+const server = app.listen(port, () => {
+  console.log(`Subreddit Game API listening on port ${port}!`);
+});
+
+const wss = new WebSocket.Server({ server });
+
+const pingClients = (server, currentClient, type, game) => {
+  server.clients.forEach(client => {
+    if (client != currentClient && client.currentGame === game) {
+      const socketData = JSON.stringify({
+        type,
+        game
+      });
+      client.send(socketData);
+    }
+  });
+};
+
+wss.on('connection', ws => {
+  console.log('New connection!');
+  ws.isAlive = true;
+
+  ws.on('pong', () => {
+    ws.isAlive = true;
+  });
+
+  ws.on('message', message => {
+    const msg = JSON.parse(message);
+    console.log('Received message', message.type);
+
+    switch (msg.type) {
+      case 'UPDATE':
+        console.log('UPDATE');
+        pingClients(wss, ws, 'UPDATE', msg.game);
+        break;
+      case 'CREATE':
+        console.log('CREATE');
+        ws.currentGame = msg.game;
+        break;
+      case 'JOIN':
+        console.log('JOIN');
+        ws.currentGame = msg.game;
+        break;
+      case 'CLEAR':
+        console.log('CLEAR');
+        delete ws.currentGame;
+        break;
+      case 'MESSAGE':
+        console.log('MESSAGE');
+        pingClients(wss, ws, 'MESSAGE', msg.game);
+        break;
+      default:
+        console.log('Invalid type');
+        break;
+    }
+
+    // ws.send('WebSocket connected!');
+  });
+});
+
+setInterval(() => {
+  wss.clients.forEach(ws => {
+    if (!ws.isAlive) return ws.terminate();
+
+    ws.isAlive = false;
+    ws.ping(null, false, true);
+  });
+}, 10000);
