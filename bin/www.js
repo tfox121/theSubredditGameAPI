@@ -19,7 +19,7 @@ const server = app.listen(port, () => {
 
 const wss = new WebSocket.Server({ server });
 
-const pingClients = (server, currentClient, type, game) => {
+const notifyClients = (server, currentClient, type, game) => {
   server.clients.forEach(client => {
     if (client != currentClient && client.currentGame === game) {
       const socketData = JSON.stringify({
@@ -46,7 +46,7 @@ wss.on('connection', ws => {
     switch (msg.type) {
       case 'UPDATE':
         console.log('UPDATE');
-        pingClients(wss, ws, 'UPDATE', msg.game);
+        notifyClients(wss, ws, 'UPDATE', msg.game);
         break;
       case 'CREATE':
         console.log('CREATE');
@@ -62,21 +62,21 @@ wss.on('connection', ws => {
         break;
       case 'MESSAGE':
         console.log('MESSAGE');
-        pingClients(wss, ws, 'MESSAGE', msg.game);
+        notifyClients(wss, ws, 'MESSAGE', msg.game);
         break;
       default:
         console.log('Invalid type');
         break;
     }
-
-    // ws.send('WebSocket connected!');
   });
 });
 
 setInterval(() => {
   wss.clients.forEach(ws => {
-    if (!ws.isAlive) return ws.terminate();
-
+    if (!ws.isAlive) {
+      console.log('Killing connection');
+      return ws.terminate();
+    }
     ws.isAlive = false;
     ws.ping(null, false, true);
   });
