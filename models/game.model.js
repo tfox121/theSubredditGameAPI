@@ -7,6 +7,7 @@ shortid.characters(
 
 const PlayerSchema = new mongoose.Schema({
   name: { type: String, required: true },
+  clientId: { type: String, required: true },
   currentGuess: { type: String, default: '' },
   score: { type: Number, default: 0 },
   lastResult: { type: String, default: '' },

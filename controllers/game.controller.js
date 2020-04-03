@@ -41,7 +41,7 @@ module.exports = class GameController {
   static async editGame(req, res, next) {
     try {
       const game = await GameStore.editGame(req.params.id, req.body);
-      res.json(game);
+      res.json({ game, playerName: game.playerName });
     } catch (err) {
       next(err);
     }
