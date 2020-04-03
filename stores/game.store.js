@@ -30,9 +30,8 @@ module.exports = class GameStore {
     return await Game.findById(id).exec();
   }
 
-  // check if player exists in game by id
-  static async checkPlayer(id, playerName) {
-    const gameData = await this.fetchGame(id);
+  // check if player exists in game
+  static checkPlayer(gameData, playerName) {
     let playerUnique = true;
     if (gameData.players) {
       gameData.players.forEach(player => {
@@ -42,6 +41,18 @@ module.exports = class GameStore {
       });
     }
     return playerUnique;
+  }
+
+  static checkClientId(gameData, clientId) {
+    let playerObj = null;
+    if (gameData.players) {
+      gameData.players.forEach(player => {
+        if (player.clientId === clientId) {
+          playerObj = player;
+        }
+      });
+    }
+    return playerObj;
   }
 
   static async generateSubreddit(nsfwLevel) {
@@ -81,13 +92,19 @@ module.exports = class GameStore {
 
   // edit existing game according to id
   static async editGame(id, requestBody) {
+    const { newPlayer, clientId } = requestBody;
     const gameData = await this.fetchGame(id);
-    if (requestBody.newPlayer) {
-      console.log('EDIT:', requestBody.newPlayer, id);
+    if (newPlayer) {
+      console.log('EDIT:', newPlayer, clientId, id);
 
-      const playerUnique = await this.checkPlayer(id, requestBody.newPlayer);
-      if (!playerUnique) {
+      const playerUnique = this.checkPlayer(gameData, newPlayer);
+
+      const clientExisting = this.checkClientId(gameData, clientId);
+      gameData, clientId;
+
+      if (!playerUnique || clientExisting) {
         console.log('Joining as existing player');
+        gameData.playerName = clientExisting && clientExisting.name;
         return gameData;
       }
       if (gameData.gameStarted) {
@@ -95,10 +112,11 @@ module.exports = class GameStore {
         return;
       }
       console.log('New player');
-      const newPlayer = {
-        name: requestBody.newPlayer
+      const playerObj = {
+        name: newPlayer,
+        clientId
       };
-      gameData.players = [newPlayer, ...(gameData.players && gameData.players)];
+      gameData.players = [playerObj, ...(gameData.players && gameData.players)];
     }
     if (requestBody.guess) {
       console.log('EDIT:', requestBody.player, requestBody.guess, id);
