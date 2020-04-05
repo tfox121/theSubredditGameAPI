@@ -31,8 +31,9 @@ module.exports = class GameStore {
   }
 
   // check if player exists in game
-  static checkPlayer(gameData, playerName) {
+  static async checkPlayer(playerName, gameData) {
     let playerUnique = true;
+    console.log('PLAYERS', gameData.players);
     if (gameData.players) {
       gameData.players.forEach(player => {
         if (player.name === playerName) {
@@ -43,7 +44,10 @@ module.exports = class GameStore {
     return playerUnique;
   }
 
-  static checkClientId(gameData, clientId) {
+  static async checkClientId(clientId, gameData) {
+    // const gameData = await this.fetchGame(id);
+
+    console.log('PLAYERS', gameData.players);
     let playerObj = null;
     if (gameData.players) {
       gameData.players.forEach(player => {
@@ -94,18 +98,40 @@ module.exports = class GameStore {
   static async editGame(id, requestBody) {
     const { newPlayer, clientId } = requestBody;
     const gameData = await this.fetchGame(id);
-    if (newPlayer) {
-      console.log('EDIT:', newPlayer, clientId, id);
+    // if (newPlayer) {
+    //   console.log('EDIT:', newPlayer, clientId, id, gameData.players);
 
-      const playerUnique = this.checkPlayer(gameData, newPlayer);
+    //   const clientExisting = this.checkClientId(clientId, id);
 
-      const clientExisting = this.checkClientId(gameData, clientId);
-      gameData, clientId;
+    //   if (!playerUnique) {
+    //     console.log('Joining as existing player');
+    //     gameData.playerName = clientExisting && clientExisting.name;
+    //     return gameData;
+    //   } else if (gameData.gameStarted) {
+    //     console.log('Game already started');
+    //     return;
+    //   } else {
+    //     console.log('New player');
+    //     const playerObj = {
+    //       name: newPlayer,
+    //       clientId
+    //     };
+    //     gameData.players.push(playerObj);
+    //   }
+    // }
+    if (clientId && newPlayer) {
+      console.log('EDIT:', clientId, id);
 
-      if (!playerUnique || clientExisting) {
+      const clientExisting = await this.checkClientId(clientId, gameData);
+      const playerUnique = this.checkPlayer(newPlayer, id);
+
+      if (clientExisting) {
         console.log('Joining as existing player');
-        gameData.playerName = clientExisting && clientExisting.name;
+        gameData.playerName = clientExisting.name;
         return gameData;
+      }
+      if (!playerUnique) {
+        console.log('Name already in use');
       }
       if (gameData.gameStarted) {
         console.log('Game already started');
@@ -116,7 +142,7 @@ module.exports = class GameStore {
         name: newPlayer,
         clientId
       };
-      gameData.players = [playerObj, ...(gameData.players && gameData.players)];
+      gameData.players.push(playerObj);
     }
     if (requestBody.guess) {
       console.log('EDIT:', requestBody.player, requestBody.guess, id);
@@ -135,6 +161,7 @@ module.exports = class GameStore {
         });
       }
     }
+    console.log('SAVING');
     return await gameData.save();
   }
 
