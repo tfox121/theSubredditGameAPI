@@ -41,7 +41,7 @@ wss.on('connection', ws => {
 
   ws.on('message', message => {
     const msg = JSON.parse(message);
-    console.log('Received message', message.type);
+    console.log('Received message', msg.type);
 
     switch (msg.type) {
       case 'UPDATE':
