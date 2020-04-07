@@ -28,6 +28,8 @@ const MessageSchema = new mongoose.Schema({
 
 const GameSchema = new mongoose.Schema({
   _id: { type: String, default: shortid.generate },
+  timeCreated: { type: Date, default: Date.now },
+  lastAction: { type: Date, default: Date.now },
   roundComplete: { type: Boolean, default: false },
   gameComplete: { type: Boolean, default: false },
   currentSub: {},

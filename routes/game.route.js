@@ -9,6 +9,9 @@ router.post('/', GameController.createGame);
 // fetch all games
 router.get('/', GameController.fetchGames);
 
+// fetch client's games
+router.get('/current/:clientId', GameController.fetchGamesByClient);
+
 // fetch single game
 router.get('/:id', GameController.fetchGame);
 

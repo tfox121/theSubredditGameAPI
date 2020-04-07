@@ -9,10 +9,10 @@ module.exports = class GameStore {
     const { rounds, nsfw } = requestBody;
     console.log('New game created');
 
-    const subList = [];
-    for (let i = 0; i < 5; i++) {
-      subList.push(await this.generateSubreddit(nsfw));
-    }
+    const subList = [await this.generateSubreddit(nsfw)];
+    // for (let i = 0; i < 5; i++) {
+    //   subList.push(await this.generateSubreddit(nsfw));
+    // }
 
     const newGame = new Game({ rounds, subList, nsfw });
     return await newGame.save();
@@ -24,39 +24,22 @@ module.exports = class GameStore {
     return await Game.find({}).exec();
   }
 
+  // return list of all games including player wih clientId
+  static async fetchGamesByClient(clientId) {
+    console.log('Retrieving games', clientId);
+    return await Game.find({
+      'players.clientId': clientId,
+      gameComplete: false
+    })
+      .sort({ lastAction: 'desc' })
+      .limit(10)
+      .exec();
+  }
+
   // find task by id, return task database object
   static async fetchGame(id) {
     console.log('Retrieving game', id);
     return await Game.findById(id).exec();
-  }
-
-  // check if player exists in game
-  static async checkPlayer(playerName, gameData) {
-    let playerUnique = true;
-    console.log('PLAYERS', gameData.players);
-    if (gameData.players) {
-      gameData.players.forEach(player => {
-        if (player.name === playerName) {
-          playerUnique = false;
-        }
-      });
-    }
-    return playerUnique;
-  }
-
-  static async checkClientId(clientId, gameData) {
-    // const gameData = await this.fetchGame(id);
-
-    console.log('PLAYERS', gameData.players);
-    let playerObj = null;
-    if (gameData.players) {
-      gameData.players.forEach(player => {
-        if (player.clientId === clientId) {
-          playerObj = player;
-        }
-      });
-    }
-    return playerObj;
   }
 
   static async generateSubreddit(nsfwLevel) {
@@ -85,13 +68,40 @@ module.exports = class GameStore {
   }
 
   static async subRefresh(gameData) {
-    gameData.subList.shift();
-    gameData.subList.push(await this.generateSubreddit(gameData.nsfw));
+    console.log('REFRESHING');
+    while (gameData.subList.length < 2) {
+      gameData.subList.push(await this.generateSubreddit(gameData.nsfw));
+    }
     gameData.save();
   }
 
   static async generateSingleSub(nsfw) {
     return await this.generateSubreddit(nsfw);
+  }
+
+  // check if player exists in game
+  static checkPlayer(playerName, gameData) {
+    let playerUnique = true;
+    if (gameData.players) {
+      gameData.players.forEach(player => {
+        if (player.name === playerName) {
+          playerUnique = false;
+        }
+      });
+    }
+    return playerUnique;
+  }
+
+  static checkClientId(clientId, gameData) {
+    let playerObj = null;
+    if (gameData.players) {
+      gameData.players.forEach(player => {
+        if (player.clientId === clientId) {
+          playerObj = player;
+        }
+      });
+    }
+    return playerObj;
   }
 
   // edit existing game according to id
@@ -122,11 +132,11 @@ module.exports = class GameStore {
     if (clientId && newPlayer) {
       console.log('EDIT:', clientId, id);
 
-      const clientExisting = await this.checkClientId(clientId, gameData);
-      const playerUnique = this.checkPlayer(newPlayer, id);
+      const clientExisting = this.checkClientId(clientId, gameData);
+      const playerUnique = this.checkPlayer(newPlayer, gameData);
 
       if (clientExisting) {
-        console.log('Joining as existing player');
+        console.log('Joining as existing player', clientExisting.name);
         gameData.playerName = clientExisting.name;
         return gameData;
       }
@@ -160,6 +170,7 @@ module.exports = class GameStore {
           player.lastResult = resultsObj[player.name].toString();
         });
       }
+      gameData.lastAction = Date.now();
     }
     console.log('SAVING');
     return await gameData.save();
@@ -251,9 +262,11 @@ module.exports = class GameStore {
       readyForNextRound &&
       (!gameData.gameStarted || gameData.roundComplete)
     ) {
+      gameData.lastAction = Date.now();
       gameData.gameStarted = true;
       console.log('Everyone Ready!');
       gameData.currentSub = gameData.subList[0];
+      gameData.subList.shift();
       if (gameData.roundComplete) {
         gameData.roundComplete = false;
         gameData.currentRound++;

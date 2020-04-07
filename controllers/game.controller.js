@@ -20,6 +20,15 @@ module.exports = class GameController {
     }
   }
 
+  static async fetchGamesByClient(req, res, next) {
+    try {
+      const games = await GameStore.fetchGamesByClient(req.params.clientId);
+      res.json(games);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   static async fetchGame(req, res, next) {
     try {
       const game = await GameStore.fetchGame(req.params.id);
@@ -41,7 +50,6 @@ module.exports = class GameController {
   static async editGame(req, res, next) {
     try {
       const game = await GameStore.editGame(req.params.id, req.body);
-      console.log(game.players);
       res.json({ game, playerName: game.playerName });
     } catch (err) {
       next(err);
