@@ -6,6 +6,8 @@ const app = require('../app');
 const mongoose = require('mongoose');
 const WebSocket = require('ws');
 
+const ConnectionStore = require('../stores/connection.store');
+
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -31,15 +33,30 @@ const notifyClients = (server, currentClient, type, game) => {
   });
 };
 
-wss.on('connection', ws => {
-  console.log('New connection!');
+wss.on('connection', async (ws, req) => {
+  console.log('Connection!', req.connection.remoteAddress);
+  const { remoteAddress } = req.connection;
+
+  try {
+    const existingData = await ConnectionStore.fetchConnection(remoteAddress);
+    if (existingData.ipAddress) {
+      const updatedData = await ConnectionStore.updateConnection(remoteAddress);
+      // console.log(updatedData);
+    } else {
+      const newData = await ConnectionStore.createConnection(remoteAddress);
+      // console.log(newData);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+
   ws.isAlive = true;
 
   ws.on('pong', () => {
     ws.isAlive = true;
   });
 
-  ws.on('message', message => {
+  ws.on('message', async message => {
     const msg = JSON.parse(message);
     console.log('Received message', msg.type);
 
@@ -55,6 +72,11 @@ wss.on('connection', ws => {
       case 'JOIN':
         console.log('JOIN');
         ws.currentGame = msg.game;
+        const updatedData = await ConnectionStore.updateConnection(
+          remoteAddress,
+          msg.game
+        );
+        console.log(updatedData);
         break;
       case 'CLEAR':
         console.log('CLEAR');

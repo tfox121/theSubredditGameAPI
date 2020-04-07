@@ -1,5 +1,4 @@
 const GameStore = require('../stores/game.store');
-// const Game = require('../models/game.model');
 
 module.exports = class MessageStore {
   static async createMessage(id, requestBody) {

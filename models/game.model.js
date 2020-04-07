@@ -43,6 +43,6 @@ const GameSchema = new mongoose.Schema({
   messages: [MessageSchema]
 });
 
-const Game = mongoose.model('Game', GameSchema);
+const Game = mongoose.model('Game', GameSchema, 'games');
 
 module.exports = Game;

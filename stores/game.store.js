@@ -2,6 +2,7 @@ const fetch = require('node-fetch');
 const r = require('../snoowrap');
 
 const Game = require('../models/game.model');
+const GuessesStore = require('../stores/guesses.store');
 
 module.exports = class GameStore {
   // add new game to database
@@ -155,12 +156,27 @@ module.exports = class GameStore {
       gameData.players.push(playerObj);
     }
     if (requestBody.guess) {
+      let data = await GuessesStore.fetchGuesses(
+        gameData.currentSub.display_name
+      );
+      if (!data) {
+        data = await GuessesStore.createGuesses(
+          gameData.currentSub.display_name
+        );
+      }
       console.log('EDIT:', requestBody.player, requestBody.guess, id);
       gameData.players.forEach(player => {
         if (player.name === requestBody.player) {
           player.currentGuess = requestBody.guess;
+          GuessesStore.updateGuesses(
+            gameData.currentSub.display_name,
+            requestBody.guess,
+            gameData.currentSub.subscribers,
+            player.clientId
+          );
         }
       });
+
       const roundComplete = await this.checkRoundOrGameComplete(gameData);
       if (roundComplete) {
         gameData.roundComplete = true;
