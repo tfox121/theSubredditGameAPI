@@ -34,7 +34,10 @@ const notifyClients = (server, currentClient, type, game) => {
 };
 
 wss.on('connection', async (ws, req) => {
-  console.log('Connection!', req.connection.remoteAddress);
+  console.log(
+    'Connection!',
+    req.headers['x-forwarded-for'] || req.connection.remoteAddress
+  );
 
   ws.isAlive = true;
 
