@@ -35,20 +35,6 @@ const notifyClients = (server, currentClient, type, game) => {
 
 wss.on('connection', async (ws, req) => {
   console.log('Connection!', req.connection.remoteAddress);
-  const { remoteAddress } = req.connection;
-
-  try {
-    const existingData = await ConnectionStore.fetchConnection(remoteAddress);
-    if (existingData) {
-      const updatedData = await ConnectionStore.updateConnection(remoteAddress);
-      // console.log(updatedData);
-    } else {
-      const newData = await ConnectionStore.createConnection(remoteAddress);
-      // console.log(newData);
-    }
-  } catch (err) {
-    console.error(err);
-  }
 
   ws.isAlive = true;
 
@@ -61,6 +47,21 @@ wss.on('connection', async (ws, req) => {
     console.log('Received message', msg.type);
 
     switch (msg.type) {
+      case 'CONNECT':
+        console.log('CONNECT');
+        try {
+          const existingData = await ConnectionStore.fetchConnection(msg.ip);
+          if (existingData) {
+            const updatedData = await ConnectionStore.updateConnection(msg.ip);
+            // console.log(updatedData);
+          } else {
+            const newData = await ConnectionStore.createConnection(msg.ip);
+            // console.log(newData);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+        break;
       case 'UPDATE':
         console.log('UPDATE');
         notifyClients(wss, ws, 'UPDATE', msg.game);
