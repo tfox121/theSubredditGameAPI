@@ -19,8 +19,11 @@ module.exports = class ConnectionStore {
     if (connectionData.ipAddress) {
       connectionData.lastAccessed = Date.now();
       if (gameId) {
-        const newGameObj = { gameId };
-        connectionData.push(newGameObj);
+        if (!connectionData.games.some(game => game.gameId === gameId)) {
+          const newGameObj = { gameId };
+          connectionData.games.unshift(newGameObj);
+        } else {
+        }
       }
       return await connectionData.save();
     }

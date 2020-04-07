@@ -39,7 +39,7 @@ wss.on('connection', async (ws, req) => {
 
   try {
     const existingData = await ConnectionStore.fetchConnection(remoteAddress);
-    if (existingData.ipAddress) {
+    if (existingData) {
       const updatedData = await ConnectionStore.updateConnection(remoteAddress);
       // console.log(updatedData);
     } else {
