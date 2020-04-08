@@ -11,6 +11,7 @@ const GuessesSchema = new mongoose.Schema(
   {
     createdOn: { type: Date, default: Date.now },
     subredditName: { type: String, required: true },
+    nsfw: { type: Boolean, required: true },
     guesses: [GuessSchema]
   },
   { collection: 'guesses' }
