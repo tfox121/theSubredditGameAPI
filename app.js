@@ -3,6 +3,7 @@ const logger = require('morgan');
 const bodyParser = require('body-parser');
 
 const gameRoute = require('./routes/game.route');
+const guessesRoute = require('./routes/guesses.route');
 
 // Log requests to the console.
 app.use(logger('dev'));
@@ -42,7 +43,7 @@ app.use(function(req, res, next) {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/games', gameRoute);
-app.use('/games', gameRoute);
+app.use('/guess', guessesRoute);
 
 // Setup a default catch-all route that sends back a welcome message in JSON format.
 app.get('*', (req, res) =>

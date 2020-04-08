@@ -45,16 +45,27 @@ module.exports = class GameStore {
 
   static async generateSubreddit(nsfwLevel) {
     const nsfwInt = parseInt(nsfwLevel, 10);
-    let url;
-    const randomNum = Math.random();
+    const randomNumNsfw = Math.random();
+    const randomNumSource = Math.random();
+    let nsfw = false;
+    let subName = 'random';
 
-    if (nsfwInt === 0 || (nsfwInt === 1 && randomNum <= 0.7)) {
+    if (nsfwInt === 0 || (nsfwInt === 1 && randomNumNsfw <= 0.942)) {
       console.log('SFW');
-      url = 'https://www.reddit.com/r/random/about.json';
     } else {
       console.log('NSFW');
-      url = 'https://www.reddit.com/r/randnsfw/about.json';
+      nsfw = true;
+      subName = 'randnsfw';
     }
+
+    const coverage = await GuessesStore.fetchCoveragePercentage(nsfw);
+
+    if (randomNumSource <= coverage) {
+      console.log('Using previous sub');
+      subName = await GuessesStore.fetchRandomGuesses(nsfw);
+    }
+
+    const url = `https://www.reddit.com/r/${subName}/about.json`;
 
     const subData = await fetch(url);
     const subDataJson = await subData.json();
@@ -156,20 +167,13 @@ module.exports = class GameStore {
       gameData.players.push(playerObj);
     }
     if (requestBody.guess) {
-      let data = await GuessesStore.fetchGuesses(
-        gameData.currentSub.display_name
-      );
-      if (!data) {
-        data = await GuessesStore.createGuesses(
-          gameData.currentSub.display_name
-        );
-      }
       console.log('EDIT:', requestBody.player, requestBody.guess, id);
       gameData.players.forEach(player => {
         if (player.name === requestBody.player) {
           player.currentGuess = requestBody.guess;
           GuessesStore.updateGuesses(
             gameData.currentSub.display_name,
+            gameData.currentSub.over18,
             requestBody.guess,
             gameData.currentSub.subscribers,
             player.clientId
