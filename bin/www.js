@@ -34,10 +34,28 @@ const notifyClients = (server, currentClient, type, game) => {
 };
 
 wss.on('connection', async (ws, req) => {
-  console.log(
-    'Connection!',
-    req.headers['x-forwarded-for'] || req.connection.remoteAddress
-  );
+  const { remoteAddress } = req.connection;
+  const xForwardedFor = req.headers['x-forwarded-for'];
+  console.log('Connection!', xForwardedFor || remoteAddress);
+
+  try {
+    const existingData = await ConnectionStore.fetchConnection(
+      xForwardedFor || remoteAddress
+    );
+    if (existingData) {
+      const updatedData = await ConnectionStore.updateConnection(
+        xForwardedFor || remoteAddress
+      );
+      // console.log(updatedData);
+    } else {
+      const newData = await ConnectionStore.createConnection(
+        xForwardedFor || remoteAddress
+      );
+      // console.log(newData);
+    }
+  } catch (err) {
+    console.error(err);
+  }
 
   ws.isAlive = true;
 
@@ -50,21 +68,6 @@ wss.on('connection', async (ws, req) => {
     console.log('Received message', msg.type);
 
     switch (msg.type) {
-      case 'CONNECT':
-        console.log('CONNECT');
-        try {
-          const existingData = await ConnectionStore.fetchConnection(msg.ip);
-          if (existingData) {
-            const updatedData = await ConnectionStore.updateConnection(msg.ip);
-            // console.log(updatedData);
-          } else {
-            const newData = await ConnectionStore.createConnection(msg.ip);
-            // console.log(newData);
-          }
-        } catch (err) {
-          console.error(err);
-        }
-        break;
       case 'UPDATE':
         console.log('UPDATE');
         notifyClients(wss, ws, 'UPDATE', msg.game);
