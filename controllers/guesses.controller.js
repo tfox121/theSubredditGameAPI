@@ -3,14 +3,16 @@ const GuessesStore = require('../stores/guesses.store');
 module.exports = class GuessesController {
   static async addGuess(req, res, next) {
     try {
-      const { subredditName, nsfw, guess, subscribers, clientId } = req.body;
+      const {
+        subredditName, nsfw, guess, subscribers, clientId,
+      } = req.body;
       console.log(req.body);
       const guesses = await GuessesStore.updateGuesses(
         subredditName,
         nsfw,
         guess,
         subscribers,
-        clientId
+        clientId,
       );
       console.log(guesses);
       res.json(guesses);
@@ -31,7 +33,7 @@ module.exports = class GuessesController {
   static async fetchGuessesAverage(req, res, next) {
     try {
       const average = await GuessesStore.fetchGuessesAverage(
-        req.params.subredditName
+        req.params.subredditName,
       );
       res.json(average);
     } catch (err) {

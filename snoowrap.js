@@ -1,12 +1,10 @@
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
-}
+require('dotenv').config();
 
-const snoowrap = require('snoowrap');
+const Snoowrap = require('snoowrap');
 
-module.exports = new snoowrap({
+module.exports = new Snoowrap({
   userAgent: process.env.USER_AGENT,
   clientId: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
-  refreshToken: process.env.REFRESH_TOKEN
+  refreshToken: process.env.REFRESH_TOKEN,
 });
