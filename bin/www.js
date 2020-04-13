@@ -1,16 +1,14 @@
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
-}
+require('dotenv').config();
 
-const app = require('../app');
 const mongoose = require('mongoose');
 const WebSocket = require('ws');
+const app = require('../app');
 
 const ConnectionStore = require('../stores/connection.store');
 
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
 });
 
 const port = parseInt(process.env.PORT, 10) || 8000;
@@ -21,12 +19,12 @@ const server = app.listen(port, () => {
 
 const wss = new WebSocket.Server({ server });
 
-const notifyClients = (server, currentClient, type, game) => {
-  server.clients.forEach(client => {
-    if (client != currentClient && client.currentGame === game) {
+const notifyClients = (wsServer, currentClient, type, game) => {
+  wsServer.clients.forEach((client) => {
+    if (client !== currentClient && client.currentGame === game) {
       const socketData = JSON.stringify({
         type,
-        game
+        game,
       });
       client.send(socketData);
     }
@@ -40,18 +38,12 @@ wss.on('connection', async (ws, req) => {
 
   try {
     const existingData = await ConnectionStore.fetchConnection(
-      xForwardedFor || remoteAddress
+      xForwardedFor || remoteAddress,
     );
     if (existingData) {
-      const updatedData = await ConnectionStore.updateConnection(
-        xForwardedFor || remoteAddress
-      );
-      // console.log(updatedData);
+      await ConnectionStore.updateConnection(xForwardedFor || remoteAddress);
     } else {
-      const newData = await ConnectionStore.createConnection(
-        xForwardedFor || remoteAddress
-      );
-      // console.log(newData);
+      await ConnectionStore.createConnection(xForwardedFor || remoteAddress);
     }
   } catch (err) {
     console.error(err);
@@ -63,7 +55,7 @@ wss.on('connection', async (ws, req) => {
     ws.isAlive = true;
   });
 
-  ws.on('message', async message => {
+  ws.on('message', async (message) => {
     const msg = JSON.parse(message);
     console.log('Received message', msg.type);
 
@@ -79,11 +71,10 @@ wss.on('connection', async (ws, req) => {
       case 'JOIN':
         console.log('JOIN');
         ws.currentGame = msg.game;
-        const updatedData = await ConnectionStore.updateConnection(
+        await ConnectionStore.updateConnection(
           remoteAddress,
-          msg.game
+          msg.game,
         );
-        console.log(updatedData);
         break;
       case 'CLEAR':
         console.log('CLEAR');
@@ -101,12 +92,13 @@ wss.on('connection', async (ws, req) => {
 });
 
 setInterval(() => {
-  wss.clients.forEach(ws => {
+  wss.clients.forEach((ws) => {
     if (!ws.isAlive) {
       console.log('Killing connection');
       return ws.terminate();
     }
     ws.isAlive = false;
     ws.ping(null, false, true);
+    return null;
   });
 }, 10000);

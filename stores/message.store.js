@@ -1,4 +1,4 @@
-const GameStore = require('../stores/game.store');
+const GameStore = require('./game.store');
 
 module.exports = class MessageStore {
   static async createMessage(id, requestBody) {
@@ -7,6 +7,6 @@ module.exports = class MessageStore {
 
     gameData.messages.push({ playerName, message });
 
-    return await gameData.save();
+    return gameData.save();
   }
 };

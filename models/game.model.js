@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const shortid = require('shortid');
 
 shortid.characters(
-  '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$@'
+  '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$@',
 );
 
 const PlayerSchema = new mongoose.Schema({
@@ -11,19 +11,19 @@ const PlayerSchema = new mongoose.Schema({
   currentGuess: { type: String, default: '' },
   score: { type: Number, default: 0 },
   lastResult: { type: String, default: '' },
-  readyForNext: { type: Boolean, default: false }
+  readyForNext: { type: Boolean, default: false },
 });
 
 const GuessSchema = new mongoose.Schema({
   playerName: { type: String, required: true },
   percentage: { type: Number, required: true },
-  subName: { type: String, required: true }
+  subName: { type: String, required: true },
 });
 
 const MessageSchema = new mongoose.Schema({
   playerName: { type: String, required: true },
   message: { type: String, required: true },
-  timeReceived: { type: Date, default: Date.now }
+  timeReceived: { type: Date, default: Date.now },
 });
 
 const GameSchema = new mongoose.Schema({
@@ -40,7 +40,7 @@ const GameSchema = new mongoose.Schema({
   nsfw: { type: Number, default: 0 },
   closestGuess: GuessSchema,
   players: [PlayerSchema],
-  messages: [MessageSchema]
+  messages: [MessageSchema],
 });
 
 const Game = mongoose.model('Game', GameSchema, 'games');
