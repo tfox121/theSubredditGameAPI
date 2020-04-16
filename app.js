@@ -9,15 +9,15 @@ const guessesRoute = require('./routes/guesses.route');
 app.use(logger('dev'));
 
 app.use((req, res, next) => {
-  // Website you wish to allow to connect
-  res.setHeader(
-    'Access-Control-Allow-Origin',
-    'https://thesubredditgame.herokuapp.com',
-  );
+  // // Website you wish to allow to connect
+  // res.setHeader(
+  //   'Access-Control-Allow-Origin',
+  //   'https://thesubredditgame.herokuapp.com',
+  // );
 
-  if (process.env.NODE_ENV !== 'production') {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-  }
+  // if (process.env.NODE_ENV !== 'production') {
+  //   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  // }
 
   // Request methods you wish to allow
   res.setHeader(
@@ -39,6 +39,18 @@ app.use((req, res, next) => {
   next();
 });
 
+const whitelist = ['https://thesubredditgame.herokuapp.com', 'https://subreddit-game.herokuapp.com', 'http://localhost:3000'];
+const corsOptions = {
+  origin(origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+};
+
+
 // Parse incoming requests data (https://github.com/expressjs/body-parser)
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -50,4 +62,4 @@ app.get('*', (req, res) => res.status(200).send({
   message: 'Welcome to the beginning of subreddit game API!',
 }));
 
-module.exports = app;
+module.exports = { app, corsOptions };

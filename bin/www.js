@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const mongoose = require('mongoose');
 const WebSocket = require('ws');
-const app = require('../app');
+const { app } = require('../app');
 
 const ConnectionStore = require('../stores/connection.store');
 
