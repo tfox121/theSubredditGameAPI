@@ -1,41 +1,37 @@
 const express = require('express');
-const cors = require('cors');
-
-const { corsOptions } = require('../app');
 
 const router = express.Router();
 const GameController = require('../controllers/game.controller');
 const MessageController = require('../controllers/message.controller');
 
-
 // create new game
-router.post('/', cors(corsOptions), GameController.createGame);
+router.post('/', GameController.createGame);
 
 // fetch all games
-router.get('/', cors(corsOptions), GameController.fetchGames);
+router.get('/', GameController.fetchGames);
 
 // fetch client's games
-router.get('/current/:clientId', cors(corsOptions), GameController.fetchGamesByClient);
+router.get('/current/:clientId', GameController.fetchGamesByClient);
 
 // fetch single game
-router.get('/:id', cors(corsOptions), GameController.fetchGame);
+router.get('/:id', GameController.fetchGame);
 
 // generate subreddit
-router.get('/generate/:nsfw', cors(corsOptions), GameController.generateSubreddit);
+router.get('/generate/:nsfw', GameController.generateSubreddit);
 
 // start new round
-router.patch('/:id/new', cors(corsOptions), GameController.newRound);
+router.patch('/:id/new', GameController.newRound);
 
 // edit game
-router.patch('/:id', cors(corsOptions), GameController.editGame);
+router.patch('/:id', GameController.editGame);
 
 // create new message
-router.post('/:id/message', cors(corsOptions), MessageController.createMessage);
+router.post('/:id/message', MessageController.createMessage);
 
 // fetch all messages
-router.get('/:id/message', cors(corsOptions), MessageController.fetchMessages);
+router.get('/:id/message', MessageController.fetchMessages);
 
 // delete all games
-router.delete('/delete/:auth', cors(corsOptions), GameController.deleteAll);
+router.delete('/delete/:auth', GameController.deleteAll);
 
 module.exports = router;
