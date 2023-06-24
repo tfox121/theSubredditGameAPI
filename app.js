@@ -30,7 +30,7 @@ app.use((req, res, next) => {
   next();
 });
 
-const whitelist = [process.env.CLIENT_URL];
+const whitelist = [process.env.CLIENT_URL, 'http://localhost:3000', 'http://192.168.86.201:3000'];
 const corsOptions = {
   origin(origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {
