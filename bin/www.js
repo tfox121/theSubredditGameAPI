@@ -91,14 +91,18 @@ wss.on('connection', async (ws, req) => {
   });
 });
 
-setInterval(() => {
+const interval = setInterval(() => {
   wss.clients.forEach((ws) => {
-    if (!ws.isAlive) {
-      console.log('Killing connection');
-      return ws.terminate();
+    if (ws.isAlive === false) {
+      ws.terminate();
+      return;
     }
+
     ws.isAlive = false;
-    ws.ping(null, false, true);
-    return null;
+    ws.ping();
   });
-}, 10000);
+}, 30000);
+
+wss.on('close', () => {
+  clearInterval(interval);
+});
