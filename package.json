@@ -23,7 +23,7 @@
     "shortid": "^2.2.15",
     "snoowrap": "^1.21.0",
     "time-ago": "^0.2.1",
-    "ws": "^7.2.3"
+    "ws": "^8.13.0"
   },
   "devDependencies": {
     "eslint": "^6.8.0",
