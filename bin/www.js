@@ -77,6 +77,7 @@ wss.on('connection', async (ws, req) => {
           remoteAddress,
           msg.game,
         );
+        notifyClients('UPDATE', msg.game);
         break;
       case 'CLEAR':
         console.log('CLEAR');
