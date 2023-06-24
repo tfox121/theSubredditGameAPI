@@ -27,6 +27,7 @@ wss.on('connection', async (ws, req) => {
 
   const notifyClients = (type, game) => {
     wss.clients.forEach((client) => {
+      console.log(client !== ws, client.readyState === WebSocket.OPEN, client.currentGame === game);
       if (client !== ws && client.readyState === WebSocket.OPEN && client.currentGame === game) {
         console.log('updating client');
         const socketData = JSON.stringify({
