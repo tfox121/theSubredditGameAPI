@@ -19,8 +19,8 @@
     "express": "^4.17.1",
     "mongoose": "^5.9.6",
     "morgan": "^1.10.0",
+    "nanoid": "^2.1.11",
     "node-fetch": "^2.6.0",
-    "shortid": "^2.2.15",
     "snoowrap": "^1.21.0",
     "time-ago": "^0.2.1",
     "ws": "^8.13.0"

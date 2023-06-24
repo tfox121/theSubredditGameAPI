@@ -1,9 +1,7 @@
 const mongoose = require('mongoose');
-const shortid = require('shortid');
+const generate = require('nanoid/generate');
 
-shortid.characters(
-  '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$@',
-);
+const idCharacters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 const PlayerSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -27,7 +25,7 @@ const MessageSchema = new mongoose.Schema({
 });
 
 const GameSchema = new mongoose.Schema({
-  _id: { type: String, default: shortid.generate },
+  _id: { type: String, default: generate(idCharacters, 9) },
   timeCreated: { type: Date, default: Date.now },
   lastAction: { type: Date, default: Date.now },
   roundComplete: { type: Boolean, default: false },
