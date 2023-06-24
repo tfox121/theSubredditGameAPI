@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const mongoose = require('mongoose');
 const WebSocket = require('ws');
+const nanoid = require('nanoid');
 const app = require('../app');
 
 const ConnectionStore = require('../stores/connection.store');
@@ -25,10 +26,14 @@ wss.on('connection', async (ws, req) => {
   const xForwardedFor = req.headers['x-forwarded-for'];
   console.log('Connection!', xForwardedFor || remoteAddress);
 
+  ws.isAlive = true;
+  ws.on('error', console.error);
+  ws.id = nanoid();
+
   const notifyClients = (type, game) => {
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN && client.currentGame === game) {
-        console.log('updating client');
+        console.log('updating client', client.id);
         const socketData = JSON.stringify({
           type,
           game,
@@ -96,7 +101,7 @@ wss.on('connection', async (ws, req) => {
 
 const interval = setInterval(() => {
   wss.clients.forEach((ws) => {
-    if (ws.isAlive === false) {
+    if (!ws.isAlive) {
       ws.terminate();
       return;
     }
