@@ -19,22 +19,24 @@ const server = app.listen(port, () => {
 
 const wss = new WebSocket.Server({ server });
 
-const notifyClients = (wsServer, currentClient, type, game) => {
-  wsServer.clients.forEach((client) => {
-    if (client !== currentClient && client.currentGame === game) {
-      const socketData = JSON.stringify({
-        type,
-        game,
-      });
-      client.send(socketData);
-    }
-  });
-};
 
 wss.on('connection', async (ws, req) => {
-  const { remoteAddress } = req.connection;
+  const { remoteAddress } = req.socket;
   const xForwardedFor = req.headers['x-forwarded-for'];
   console.log('Connection!', xForwardedFor || remoteAddress);
+
+  const notifyClients = (type, game) => {
+    wss.clients.forEach((client) => {
+      if (client !== ws && client.readyState === WebSocket.OPEN && client.currentGame === game) {
+        console.log('updating client');
+        const socketData = JSON.stringify({
+          type,
+          game,
+        });
+        client.send(socketData);
+      }
+    });
+  };
 
   try {
     const existingData = await ConnectionStore.fetchConnection(
@@ -62,7 +64,7 @@ wss.on('connection', async (ws, req) => {
     switch (msg.type) {
       case 'UPDATE':
         console.log('UPDATE');
-        notifyClients(wss, ws, 'UPDATE', msg.game);
+        notifyClients('UPDATE', msg.game);
         break;
       case 'CREATE':
         console.log('CREATE');
@@ -82,7 +84,7 @@ wss.on('connection', async (ws, req) => {
         break;
       case 'MESSAGE':
         console.log('MESSAGE');
-        notifyClients(wss, ws, 'MESSAGE', msg.game);
+        notifyClients('MESSAGE', msg.game);
         break;
       default:
         console.log('Invalid type');
