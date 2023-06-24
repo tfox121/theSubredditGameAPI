@@ -40,7 +40,7 @@ app.use((req, res, next) => {
   next();
 });
 
-const whitelist = ['https://thesubredditgame.herokuapp.com', 'https://subreddit-game.herokuapp.com', 'http://localhost:3000'];
+const whitelist = [process.env.CLIENT_URL];
 const corsOptions = {
   origin(origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {
