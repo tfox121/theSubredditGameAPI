@@ -10,16 +10,6 @@ const guessesRoute = require('./routes/guesses.route');
 app.use(logger('dev'));
 
 app.use((req, res, next) => {
-  // // Website you wish to allow to connect
-  // res.setHeader(
-  //   'Access-Control-Allow-Origin',
-  //   'https://thesubredditgame.herokuapp.com',
-  // );
-
-  // if (process.env.NODE_ENV !== 'production') {
-  //   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-  // }
-
   // Request methods you wish to allow
   res.setHeader(
     'Access-Control-Allow-Methods',
