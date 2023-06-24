@@ -22,7 +22,7 @@ module.exports = class GameStore {
     return Game.find({}).exec();
   }
 
-  // return list of all games including player wih clientId
+  // return list of all games including player with clientId
   static async fetchGamesByClient(clientId) {
     console.log('Retrieving games', clientId);
     return Game.find({
